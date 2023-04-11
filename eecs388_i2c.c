@@ -62,40 +62,65 @@ void set_up_I2C(){
 
 } 
 
-
+//Group effort
 void breakup(int bigNum, uint8_t* low, uint8_t* high){
-    /*
-        Write Task 1 code here
-        write to LED0_OFF_L AND LED0_OFF_H
-        metal i2c function assigns bits to registers
-    */
-   int h = bigNum >> 8;
-   int l = bigNum;
-   //store h and l in the two registers
-
-   /*int arr[5] = {0xA,0,0,l,h}; 
-   /*0 index: starting point of register 0x06 + 4
-     1-2 indices: values of LED0_ON_L AND LED0_ON_H 
-     3-4 indices: values of LED0_OFF_L AND LED0_OFF_H (passing in the two 8 bit values)
-   metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,arr,5,bufRead,1);*/
+// & with 0xFF to cut off 0's 
+   int h = bigNum >> 8 & 0xFF; //shifts digis of bigNum by 8 to get high 8 bit val
+   int l = (uint8_t)bigNum & 0xFF; //convert nuber to uint_8 
+   *low = l; //dereferences low pointer, assigns value of l to it
+   *high = h; //dereferences high pointer, assigns value of h to it
 }
 
-void steering(int angle){
-    /*
-        Write Task 2 code here
-    */
+void steering(int angle)
+{
+    uint8_t low;
+    uint8_t hight; 
+        
 }
 
+//Nayyir Ahmed
 void stopMotor(){
-    /*
-        Write Task 3 code here
-    */
+   uint8_t low;
+   uint8_t high;
+   breakup(280, low, high); //280 is the value needed in LED0_OFF to put the wheels in neutral
+   //bufWrite[0] = PCA9685_LED0_ON_L
+   bufWrite[0] = PCA9685_LED0_ON_L + 0x04; //starting register
+   bufWrite[1] = 0x00;
+   bufWrite[2] = 0x00;
+   bufWrite[3] = low;
+   bufWrite[4] = high;
+   /*0 index: starting point 
+     1-2 indices: values of LED0_ON_L AND LED0_ON_H 
+     3-4 indices: values of LED0_OFF_L AND LED0_OFF_H (passing in the two 8 bit values)*/
+   metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //bufWrite values written into LED0 to stop the car
 }
 
-void driveForward(uint8_t speedFlag){
-    /*
-        Write Task 4 code here
-    */
+//Dylan A. Davis
+void driveForward(uint8_t speedFlag)
+{
+    uint8_t low; //assigning low and high as the correct data type 
+    uint8_t high; 
+    if (speedFlag = 1) // if speed flag is = to 1 then the value we passs to break up is 313
+    {
+        breakup(313, low, high);
+    }
+    else if (speedFlag = 2 )
+    {
+        breakup(315, low, high);
+    }
+    else if (speedFlag = 3)
+    {
+    breakup(317,low, high);
+    }
+
+    bufWrite[0] = PCA9685_LED0_ON_L + 0x04;// here we are writing the exact values we want into the bufWrite register we start at the given start value and add hex 4 to ensure we are at the correct starting value.
+    bufWrite[1] = 0x00; // make the vaules of 1 and 2 0 as per the instuction of ishraq
+    bufWrite[2] = 0x00;
+    bufWrite[3] = low; 
+    bufWrite[4] = high;
+
+    metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1);
+     
 }
 
 void driveReverse(uint8_t speedFlag){
@@ -241,4 +266,3 @@ int main()
     */
 
 }
-
