@@ -81,7 +81,7 @@ void steering(int angle)
   uint8_t readVal = 0;    
   breakup(servoCycle, &a, &b);    
   _Bool success;    
-  bufWrite[0] = PCA9685_LED0_ON_L;    
+  bufWrite[0] = PCA9685_LED1_ON_L;    
   bufWrite[1] = 0;    
   bufWrite[2] = 0;    
   bufWrite[3] = a;    
@@ -96,8 +96,7 @@ void stopMotor(){
    uint8_t low;
    uint8_t high;
    breakup(280, low, high); //280 is the value needed in LED0_OFF to put the wheels in neutral
-   //bufWrite[0] = PCA9685_LED0_ON_L
-   bufWrite[0] = PCA9685_LED0_ON_L + 0x04; //starting register
+   bufWrite[0] = PCA9685_LED1_ON_L; //starting register
    bufWrite[1] = 0x00;
    bufWrite[2] = 0x00;
    bufWrite[3] = low;
@@ -126,7 +125,7 @@ void driveForward(uint8_t speedFlag)
     breakup(317,low, high);
     }
 
-    bufWrite[0] = PCA9685_LED0_ON_L + 0x04;// here we are writing the exact values we want into the bufWrite register we start at the given start value and add hex 4 to ensure we are at the correct starting value.
+    bufWrite[0] = PCA9685_LED1_ON_L + 0x04;// here we are writing the exact values we want into the bufWrite register we start at the given start value and add hex 4 to ensure we are at the correct starting value.
     bufWrite[1] = 0x00; // make the vaules of 1 and 2 0 as per the instuction of ishraq
     bufWrite[2] = 0x00;
     bufWrite[3] = low; 
