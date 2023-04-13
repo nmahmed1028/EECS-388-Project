@@ -71,10 +71,23 @@ void breakup(int bigNum, uint8_t* low, uint8_t* high){
    *high = h; //dereferences high pointer, assigns value of h to it
 }
 
+
+// Olufewa Alonge
 void steering(int angle)
 {
-    uint8_t low;
-    uint8_t hight; 
+  int servoCycle = getServoCycle(angle);    
+  uint8_t a = 0;    
+  uint8_t b = 0;    
+  uint8_t readVal = 0;    
+  breakup(servoCycle, &a, &b);    
+  _Bool success;    
+  bufWrite[0] = PCA9685_LED0_ON_L;    
+  bufWrite[1] = 0;    
+  bufWrite[2] = 0;    
+  bufWrite[3] = a;    
+  bufWrite[4] = b;    
+  success = metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //initial read    
+  readVal = bufRead[0];
         
 }
 
