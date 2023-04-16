@@ -125,8 +125,8 @@ void driveForward(uint8_t speedFlag)
     breakup(317,low, high);
     }
 
-    bufWrite[0] = PCA9685_LED1_ON_L + 0x04;// here we are writing the exact values we want into the bufWrite register we start at the given start value and add hex 4 to ensure we are at the correct starting value.
-    bufWrite[1] = 0x00; // make the vaules of 1 and 2 0 as per the instuction of ishraq
+    bufWrite[0] = PCA9685_LED1_ON_L;// here we are writing the exact values we want into the bufWrite register we start at the given start value and add hex 4 to ensure we are at the correct starting value.
+    bufWrite[1] = 0x00; // make the vaules of 1 and 2 to be 0 
     bufWrite[2] = 0x00;
     bufWrite[3] = low; 
     bufWrite[4] = high;
@@ -136,9 +136,28 @@ void driveForward(uint8_t speedFlag)
 }
 
 void driveReverse(uint8_t speedFlag){
-    /*
-        Write task 5 code here
-    */
+    uint8_t low; //assigning low and high as the correct data type 
+    uint8_t high; 
+    if (speedFlag = 1) // if speed flag is = to 1 then the value we passs to break up is 267
+    {
+        breakup(267, low, high);
+    }
+    else if (speedFlag = 2 )
+    {
+        breakup(265, low, high);
+    }
+    else if (speedFlag = 3)
+    {
+    breakup(263,low, high);
+    }
+
+    bufWrite[0] = PCA9685_LED1_ON_L;// here we are writing the exact values we want into the bufWrite register we start at the given start value and add hex 4 to ensure we are at the correct starting value.
+    bufWrite[1] = 0x00; // make the vaules of 1 and 2 to be 0 
+    bufWrite[2] = 0x00;
+    bufWrite[3] = low; 
+    bufWrite[4] = high;
+
+    metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1);
 }
 
 int main()
