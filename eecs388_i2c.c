@@ -65,8 +65,8 @@ void set_up_I2C(){
 //Group effort
 void breakup(int bigNum, uint8_t* low, uint8_t* high){
 // & with 0xFF to cut off 0's 
-   int h = bigNum >> 8 & 0xFF; //shifts digis of bigNum by 8 to get high 8 bit val
-   int l = (uint8_t)bigNum & 0xFF; //convert nuber to uint_8 
+   int h = bigNum >> 8 & 0xFF; //shifts digis of bigNum right by 8 to get high 8 bits
+   int l = (uint8_t)bigNum & 0xFF; //ANDs bigNum with 11111111 so that it takes the low 8 bits 
    *low = l; //dereferences low pointer, assigns value of l to it
    *high = h; //dereferences high pointer, assigns value of h to it
 }
@@ -76,14 +76,14 @@ void breakup(int bigNum, uint8_t* low, uint8_t* high){
 void steering(int angle)
 { 
   printf("steering\n");
-  int servoCycle = getServoCycle(angle);    
+  int servoCycle = getServoCycle(angle); //pass angle to getServoCycle, stores value in servoCycle var 
+   //converts angle to servo duty cycle
   uint8_t a = 0;    
   uint8_t b = 0;    
   uint8_t readVal = 0;    
   breakup(servoCycle, &a, &b);    
-  _Bool success;    
-  bufWrite[0] = PCA9685_LED1_ON_L;    
-  //bufWrite[0] = PCA9685_LED0_ON_L;
+  _Bool success;      
+  bufWrite[0] = PCA9685_LED0_ON_L; //servo memory address  
   bufWrite[1] = 0;    
   bufWrite[2] = 0;    
   bufWrite[3] = a;    
@@ -91,14 +91,16 @@ void steering(int angle)
   success = metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //initial read    
   readVal = bufRead[0];
         
-}
+
+
 
 //Nayyir Ahmed
 void stopMotor(){
    printf("stopping motor\n");
    uint8_t low;
    uint8_t high;
-   breakup(280, low, high); //280 is the value needed in LED0_OFF to put the wheels in neutral
+   breakup(280, low, high); //memory address for motor direction control
+    //the 280 is an arbitrary PWM for the ESC to calibrate around - 280 is the value for neutral, which will stop the motor
    bufWrite[0] = PCA9685_LED1_ON_L; //starting register
    bufWrite[1] = 0x00;
    bufWrite[2] = 0x00;
@@ -106,8 +108,8 @@ void stopMotor(){
    bufWrite[4] = high;
    /*0 index: starting point 
      1-2 indices: values of LED0_ON_L AND LED0_ON_H 
-     3-4 indices: values of LED0_OFF_L AND LED0_OFF_H (passing in the two 8 bit values)*/
-   metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //bufWrite values written into LED0 to stop the car
+     3-4 indices: values of LED1_OFF_L AND LED1_OFF_H (passing in the two 8 bit values)*/
+   metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //bufWrite values written into register to stop the car
 }
 
 //Dylan A. Davis
@@ -115,8 +117,9 @@ void driveForward(uint8_t speedFlag){
     printf("driving forward\n");
     uint8_t low; //assigning low and high as the correct data type 
     uint8_t high; 
-    int speed = 0;
-    switch(speedFlag){
+    int speed = 0; // temp variable
+    //313 and above is the PWM signal that makes the motor go forward
+    switch(speedFlag){ //checks for three different cases, assigns proper speed value based on each case
         case 1:
             speed = 313;
             break;
@@ -127,10 +130,10 @@ void driveForward(uint8_t speedFlag){
             speed = 317;
             break;
     }
-    breakup(speed, low, high);
+    breakup(speed, low, high); //pass speed value into breakup
 
-    bufWrite[0] = PCA9685_LED1_ON_L;// here we are writing the exact values we want into the bufWrite register we start at the given start value and add hex 4 to ensure we are at the correct starting value.
-    bufWrite[1] = 0x00; // make the vaules of 1 and 2 to be 0 
+    bufWrite[0] = PCA9685_LED1_ON_L; //memory address
+    bufWrite[1] = 0x00; //make the values of 1 and 2 to be 0 
     bufWrite[2] = 0x00;
     bufWrite[3] = low; 
     bufWrite[4] = high;
@@ -138,11 +141,12 @@ void driveForward(uint8_t speedFlag){
     metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1);
 }
 
-void driveReverse(uint8_t speedFlag){
+void driveReverse(uint8_t speedFlag){ //works same way as driveForward but different values are checked for
     printf("driving reverse\n");
-    uint8_t low; //assigning low and high as the correct data type 
+    uint8_t low;  
     uint8_t high; 
     int speed = 0;
+     //267 and below is the PWM signal that makes the motor go forward
     switch(speedFlag){
         case 1:
             speed = 267;
@@ -156,8 +160,8 @@ void driveReverse(uint8_t speedFlag){
     }
     breakup(speed, low, high);
 
-    bufWrite[0] = PCA9685_LED1_ON_L;// here we are writing the exact values we want into the bufWrite register we start at the given start value and add hex 4 to ensure we are at the correct starting value.
-    bufWrite[1] = 0x00; // make the vaules of 1 and 2 to be 0 
+    bufWrite[0] = PCA9685_LED1_ON_L;
+    bufWrite[1] = 0x00; 
     bufWrite[2] = 0x00;
     bufWrite[3] = low; 
     bufWrite[4] = high;
@@ -169,7 +173,7 @@ int main()
 {
    set_up_I2C();
     
-   stopMotor();
+   stopMotor(); //stop motor called initially for calibration
    delay(2000);
 
    steering(0);
