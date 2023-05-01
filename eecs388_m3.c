@@ -87,8 +87,9 @@ void steering(int angle)
   bufWrite[2] = 0;    
   bufWrite[3] = a;    
   bufWrite[4] = b;    
-  success = metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //initial read    
+  //success = metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //initial read    
   readVal = bufRead[0];     
+  printf("running steer %d\n", angle);
 }
 
 //Nayyir Ahmed
@@ -103,10 +104,11 @@ void stopMotor(){
    bufWrite[2] = 0x00;
    bufWrite[3] = low;
    bufWrite[4] = high;
+   printf("running stop\n");
    /*0 index: starting point 
      1-2 indices: values of LED0_ON_L AND LED0_ON_H 
      3-4 indices: values of LED0_OFF_L AND LED0_OFF_H (passing in the two 8 bit values)*/
-   metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //bufWrite values written into LED0 to stop the car
+   //metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1); //bufWrite values written into LED0 to stop the car
 }
 
 
@@ -136,7 +138,8 @@ void driveForward(uint8_t speedFlag){
     bufWrite[3] = low; 
     bufWrite[4] = high;
 
-    metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1);
+    //metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1);
+    printf("running forward\n");
 }
 
 //Steve Gan
@@ -165,21 +168,24 @@ void driveReverse(uint8_t speedFlag){
     bufWrite[3] = low; 
     bufWrite[4] = high;
 
-    metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1);
+    //metal_i2c_transfer(i2c,PCA9685_I2C_ADDRESS,bufWrite,5,bufRead,1);
+    printf("running reverse\n");
 }
-
+//reads in string from UART, extracts them and passes them onto variables
 void raspberrypi_int_handler(int devid, int * angle, int * speed, int * duration)
 {
-    char * str = malloc(20 * sizeof(char));// you can use this to store the received string
+    char * str = malloc(50 * sizeof(char));// you can use this to store the received string
                                             // it is the same as char str[20] 
-    *angle = ser_readline(devid, str[0], str); 
-    *speed = ser_readline(devid, str[1], str);
-    *duration = ser_readline(devid, str[3], str);              
+    int data = ser_readline(1,50,str); //reads to/from UART0, puts values into str
+    printf("%s\n",str);
+    sscanf(str, "angle: %d speed: %d duration: %d", angle, speed, duration);
+    //scans the elements from str array and saving them to the correct pointers
+    
 
    // Extract the values of angle, speed and duration inside this function
    // And place them into the correct variables that are passed in
 
-    free(str);
+    free(str); //de allocates space once the function is done
 }
 
 
@@ -206,16 +212,12 @@ int main()
     // Drive loop
     while (1) {
 
-        if (ser_isready(1))){
+        if (ser_isready(0)){ //checks if UART is ready
             printf("READY");
-            char arr[10];
-            int read = ser_readline(1,10,arr); //n value is length of word (10 here since we dont know length)
-            printf("Command value: " %s\n, arr);
-            int ang, speed, dur;
-            sscanf(arr, "%d,%d,%d", &ang, &speed, &dur);
-            printf("Angle: %d, Speed %d, Duration: %d", ang, speed, dur);
+            raspberrypi_int_handler(0,&angle,&speed,&duration); //calls handler func
+            printf("\n%d, %d, %d\n", angle,speed,duration);
 
-            steering(ang);
+            steering(angle);
 
             if(speed < 0){
                 driveReverse(abs(speed));
@@ -225,7 +227,7 @@ int main()
                 driveForward(speed);
             }
 
-            delay(dur * 1000)
+            delay(duration * 1000);
 
         }
         // The following pseudo-code is a rough guide on how to write your code
